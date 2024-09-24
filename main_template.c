@@ -1,8 +1,8 @@
 /*
 project: 01
-author: 
-email: 
-student id: 
+author: Ayodele Adeyinka 
+email: kt98339@umbc.edu
+student id: kt98339
 description: a simple linux shell designed to perform basic linux commands
 */
 
@@ -37,9 +37,12 @@ int main(int argc, char **argv)
     until the user enters the "exit" command.
     */
 
-    /*
-    ENTER YOUR CODE HERE
-    */
+    if(argc > 1){
+    	fprintf(stderr, "no arguments permitted yet\n");
+	exit(1);
+    }
+    user_prompt_loop();
+	    
 }
 
 /*
@@ -52,12 +55,26 @@ with the user given value.
 */
 
 /*user_prompt_loop()*/
+
+
 {
     // initialize variables
 
+    int len = 0;
+    char *entry = (char ")malloc(20*sizeof(char));
+      //  1. prompt the user to type command by printing >>
+    while(1)
+    {
+	    printf(">> ");
+	    *entry++ = fgetc(1)
+	    if (argv[1] == "/proc
+    }	
     /*
     loop:
         1. prompt the user to type command by printing >>
+	
+
+	
         2. get the user input using get_user_command() function 
         3. parse the user input using parse_command() function 
         Example: 

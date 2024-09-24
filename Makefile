@@ -1,8 +1,8 @@
 # Add the names of your .c files from your assignment here.
-SRCS = simple_shell.c utils.c
+SRCS = main_template.c utils.c
 
 # This line is the name of the program you are building
-BIN = simple_shell
+BIN = main_template
 
 # Compiler flags to pass to the system's C compiler while building
 # the source files
