@@ -19,13 +19,13 @@ In this project, you are going to implement a number of functions to
 create a simple linux shell interface to perform basic linux commands
 */
 
-/* 
-DEFINE THE FUNCTION PROTOTYPES
-user_prompt_loop()
-get_user_command()
-parse_command()
-execute_command()
-*/
+ 
+// DEFINE THE FUNCTION PROTOTYPES
+void user_prompt_loop();
+void get_user_command();
+//parse_command();
+//execute_command();
+
 
 int main(int argc, char **argv)
 {
@@ -36,13 +36,13 @@ int main(int argc, char **argv)
     otherwise call the user_prompt_loop() function to get user input repeatedly 
     until the user enters the "exit" command.
     */
-
-    if(argc > 1){
-    	fprintf(stderr, "no arguments permitted yet\n");
-	exit(1);
-    }
-    user_prompt_loop();
-	    
+	if (argc > 1)
+	{
+		fprintf(stderr, "error: no command-line arguments\n");
+		exit(1);
+	}
+	user_prompt_loop();
+	return 0;
 }
 
 /*
@@ -54,28 +54,56 @@ send it to the execute_command() function. If the user decides to exit, then exi
 with the user given value. 
 */
 
-/*user_prompt_loop()*/
-
-
+void get_user_command()
 {
-    // initialize variables
-
-    int len = 0;
-    char *entry = (char ")malloc(20*sizeof(char));
-      //  1. prompt the user to type command by printing >>
-    while(1)
-    {
-	    printf(">> ");
-	    *entry++ = fgetc(1)
-	    if (argv[1] == "/proc
-    }	
-    /*
-    loop:
-        1. prompt the user to type command by printing >>
+     //loop:
+     //   1. prompt the user to type command by printing >>
+	int initial_len = 10;
+	int ch, tin = 0;
+	FILE *keyb = stdin;
+	char *commands = (char *)malloc(initial_len*sizeof(char));
+	if (keyb == NULL)
+	{
+		printf("Error reading from keyboard");
+		exit(1);
+	}
+	
+	while(( ch = fgetc(keyb)) != '\n')
+	
+	{
+		commands[tin] = ch;
+		tin++;
+		if (tin > initial_len)
+		{
+			initial_len = initial_len * 4;
+			commands = (char *)realloc(commands, initial_len*sizeof(char));
+		}
+			
+	}
+			commands[tin] = '\0';
+			tin = 0;
+			//printf("%ld\n",strlen(commands));
+			//printf("%s\n",commands);
+			free(commands);
+			initial_len = 10;
+			commands = (char *)malloc(initial_len*sizeof(char));
+		
 	
 
+}
+
+
+void user_prompt_loop()
+{
+	while(1){
+		printf("$ ");
+	get_user_command();	
+	}	
+}
+
+
 	
-        2. get the user input using get_user_command() function 
+      /*  2. get the user input using get_user_command() function 
         3. parse the user input using parse_command() function 
         Example: 
             user input: "ls -la"
@@ -120,7 +148,7 @@ with the user given value.
     /*
     ENTER YOUR CODE HERE
     */
-}
+
 
 /*
 get_user_command():
@@ -128,7 +156,7 @@ Take input of arbitrary size from the user and return to the user_prompt_loop()
 */
 
 /*get_user_command()*/
-{
+
     /*
     Functions you may need: 
         malloc(), realloc(), getline(), fgetc(), or any other similar functions
@@ -137,7 +165,7 @@ Take input of arbitrary size from the user and return to the user_prompt_loop()
     /*
     ENTER YOUR CODE HERE
     */
-}
+
 
 /*
 parse_command():
@@ -151,7 +179,7 @@ Example:
 */
 
 /*parse_command()*/
-{
+
     /*
     Functions you may need: 
         malloc(), realloc(), free(), strlen(), first_unquoted_space(), unescape()
@@ -160,7 +188,7 @@ Example:
     /*
     ENTER YOUR CODE HERE
     */
-}
+
 
 /*
 execute_command():
@@ -169,7 +197,7 @@ fork a process and execute the parsed command inside the child process
 */
 
 /*execute_command()*/
-{
+
     /*
     Functions you may need: 
         fork(), execvp(), waitpid(), and any other useful function
@@ -178,4 +206,4 @@ fork a process and execute the parsed command inside the child process
     /*
     ENTER YOUR CODE HERE
     */
-}
+
