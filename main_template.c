@@ -54,6 +54,32 @@ send it to the execute_command() function. If the user decides to exit, then exi
 with the user given value. 
 */
 
+void parse_command(char * to_be_parsed)
+{
+	int i = 0; char **argu;
+	char *cpy = strdup(to_be_parsed);
+	char *token = strtok(to_be_parsed, " ");
+	while(token)
+	{
+		token = strtok(NULL," ");
+		i++;
+	}
+	i = 0;
+	argu = malloc(sizeof(char *) * i);
+	token = strtok(cpy, " ");	
+	while(token)
+	{
+		argu[i] = token;
+		token = strtok(NULL," ");
+		i++;
+	}
+	argu[i] = NULL;
+	if ((strcmp(argu[0],"exit") == 0))
+		exit(0);
+
+}
+
+
 void get_user_command()
 {
      //loop:
@@ -84,6 +110,7 @@ void get_user_command()
 			tin = 0;
 			//printf("%ld\n",strlen(commands));
 			//printf("%s\n",commands);
+			parse_command(commands);
 			free(commands);
 			initial_len = 10;
 			commands = (char *)malloc(initial_len*sizeof(char));
