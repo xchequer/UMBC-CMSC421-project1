@@ -1,11 +1,5 @@
-/*
-project: 01
-author: Ayodele Adeyinka 
-email: kt98339@umbc.edu
-student id: kt98339
-description: a simple linux shell designed to perform basic linux commands
-*/
-
+// C program named mainreturn.c to demonstrate the working
+// of command line arguement
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,46 +7,94 @@ description: a simple linux shell designed to perform basic linux commands
 #include <sys/wait.h>
 #include <ctype.h>
 #include "utils.h"
+#include <errno.h>
 
-/*
-In this project, you are going to implement a number of functions to 
-create a simple linux shell interface to perform basic linux commands
-*/
-
- 
-// DEFINE THE FUNCTION PROTOTYPES
-void user_prompt_loop();
-void get_user_command();
-//parse_command();
-//execute_command();
-
-
-int main(int argc, char **argv)
+void loop();
+void get_user_input();
+void parse_command(char *);
+int execute_command(char **);
+char line_in[200];
+char line_out[200];
+FILE *fp;
+int history = 0;
+// defining main with arguments
+int main(int argc, char* argv[])
 {
-    /*
-    Write the main function that checks the number of argument passed to ensure 
-    no command-line arguments are passed; if the number of argument is greater 
-    than 1 then exit the shell with a message to stderr and return value of 1
-    otherwise call the user_prompt_loop() function to get user input repeatedly 
-    until the user enters the "exit" command.
-    */
-	if (argc > 1)
-	{
-		fprintf(stderr, "error: no command-line arguments\n");
-		exit(1);
+    
+    if (argc > 1)
+    {
+	    fprintf(stderr, "error\n");
+	    exit(1);
+    }
+    	
+	fp = fopen(".421sh", "w+");
+	if (fp == NULL){
+		printf("Error creating file\n");
+		exit(EXIT_FAILURE);
 	}
-	user_prompt_loop();
-	return 0;
+    loop();
+    return 0;
 }
 
-/*
-user_prompt_loop():
-Get the user input using a loop until the user exits, prompting the user for a command.
-Gets command and sends it to a parser, then compares the first element to the two
-different commands ("/proc", and "exit"). If it's none of the commands, 
-send it to the execute_command() function. If the user decides to exit, then exit 0 or exit 
-with the user given value. 
-*/
+/*void file_reader(char **argv)
+{
+	// 1. create a file in write mode
+	while (fgets(line, 40, fp) != NULL)
+	{
+		i++;
+		fputs(line,60,fp);
+		if (i == 10)
+			fseek(file, 0, SEEK_SET);
+	}
+}*/
+int execute_command(char **argv)
+{
+	char temp[200];
+	pid_t pid;
+	sprintf(temp, "%s%s", "/usr/bin:/bin", argv[0]);
+	char *path = getenv("PATH");
+	char pathenv[strlen(path) + sizeof("PATH=")];
+	sprintf(pathenv, "PATH=%s", path);
+	char *envp[] = {pathenv, NULL};
+	pid = fork();
+	if (pid < 0)
+	{
+		return -1;
+		exit(EXIT_FAILURE);
+	}
+	if (pid == 0)
+	{
+		char c; int i = 0;
+		//int num = execvpe(argv[0], argv, envp);
+		//int num = execve(temp, argv, NULL);
+
+		fclose(fp);
+		fp = fopen(".421sh", "r");	
+		if (strcmp(argv[0],"history")== 0){
+			while ((c = fgetc(fp)) != EOF) {
+        			//printf("%c", c);
+				putchar(c);
+				//fputc(c, stdout_copy);
+    			}
+			fclose(fp);
+		//	exit(0);
+		}
+		else
+		{
+		int num = execvp(argv[0], argv);
+		if (num == -1)
+		{	
+			perror("Error");
+			exit(EXIT_FAILURE);	
+		}
+		}	
+	}
+	else
+	{
+		wait(NULL);
+		free(argv);
+	}	
+}
 
 void parse_command(char * to_be_parsed)
 {
@@ -64,8 +106,10 @@ void parse_command(char * to_be_parsed)
 		token = strtok(NULL," ");
 		i++;
 	}
+	//i = 0;
+	argu = malloc(sizeof(char *) * i + 8);
+	free(to_be_parsed);
 	i = 0;
-	argu = malloc(sizeof(char *) * i);
 	token = strtok(cpy, " ");	
 	while(token)
 	{
@@ -75,17 +119,24 @@ void parse_command(char * to_be_parsed)
 	}
 	argu[i] = NULL;
 	if ((strcmp(argu[0],"exit") == 0))
+	{		
+		free(cpy); free(argu); //free(token);
 		exit(0);
-
+	}
+	//else if(strcmp(argu[0], "cat") == 0)
+	//	execute_proc_command(argu);
+	else{
+	execute_command(argu);	
+	free(cpy); //free(argu); //free(token);
+}
 }
 
-
-void get_user_command()
+void get_user_input()
 {
-     //loop:
-     //   1. prompt the user to type command by printing >>
+	if (errno == EINVAL)
+		printf("Invalid Arguments");
 	int initial_len = 10;
-	int ch, tin = 0;
+	char ch; int tin = 0;
 	FILE *keyb = stdin;
 	char *commands = (char *)malloc(initial_len*sizeof(char));
 	if (keyb == NULL)
@@ -97,6 +148,7 @@ void get_user_command()
 	while(( ch = fgetc(keyb)) != '\n')
 	
 	{
+		line_out[tin] = ch; // here is our history buffer
 		commands[tin] = ch;
 		tin++;
 		if (tin > initial_len)
@@ -106,131 +158,38 @@ void get_user_command()
 		}
 			
 	}
-			commands[tin] = '\0';
-			tin = 0;
-			//printf("%ld\n",strlen(commands));
-			//printf("%s\n",commands);
-			parse_command(commands);
-			free(commands);
-			initial_len = 10;
-			commands = (char *)malloc(initial_len*sizeof(char));
+	line_out[tin] = '\n';
+	history++;
+	fprintf(fp,line_out);
+	line_out[0] = '\0';
+	commands[tin] = '\0';
+	tin = 0; int check = 0;line_out[0] = '\0';
+	for(int z = 0; z < strlen(commands); z++)
+	{
+		if (ispunct(commands[z]) || isalnum(commands[z])) ++check;
+	}
+	if (strlen(commands) == 0 || check == 0)
+		goto bypass;
+        parse_command(commands);
+	bypass:		
+	{
+		//free(commands);
+		initial_len = 10;
+		//commands = (char *)malloc(initial_len*sizeof(char));
+	}
+	//free(commands);
+	//initial_len = 10;
+	//commands = (char *)malloc(initial_len*sizeof(char));
 		
 	
 
 }
 
 
-void user_prompt_loop()
+void loop()
 {
 	while(1){
 		printf("$ ");
-	get_user_command();	
+		get_user_input();	
 	}	
 }
-
-
-	
-      /*  2. get the user input using get_user_command() function 
-        3. parse the user input using parse_command() function 
-        Example: 
-            user input: "ls -la"
-            parsed output: ["ls", "-la", NULL]
-        4. compare the first element of the parsed output to "/proc"and "exit"
-        5. if the first element is "/proc" then you have the open the /proc file system 
-           to read from it
-            i) concat the full command:
-                Ex: user input >>/proc /process_id_no/status
-                    concated output: /proc/process_id_no/status
-            ii) read from the file line by line. you may user fopen() and getline() functions
-            iii) display the following information according to the user input from /proc
-                a) Get the cpu information if the input is /proc/cpuinfo
-                - Cpu Mhz
-                - Cache size
-                - Cpu cores
-                - Address sizes
-                b) Get the number of currently running processes from /proc/loadavg
-                c) Get how many seconds your box has been up, and how many seconds it has been idle from /proc/uptime
-                d) Get the following information from /proc/process_id_no/status
-                - the vm size of the virtual memory allocated the vbox 
-                - the most memory used vmpeak 
-                - the process state
-                - the parent pid
-                - the number of threads
-                - number of voluntary context switches
-                - number of involuntary context switches
-                e) display the list of environment variables from /proc/process_id_no/environ
-                f) display the performance information if the user input is /proc/process_id_no/sched
-        6. if the first element is "exit" the use the exit() function to terminate the program
-        7. otherwise pass the parsed command to execute_command() function 
-        8. free the allocated memory using the free() function
-    */
-
-    /*
-    Functions you may need: 
-        get_user_command(), parse_command(), execute_command(), strcmp(), strcat(), 
-        strlen(), strncmp(), fopen(), fclose(), getline(), isdigit(), atoi(), fgetc(), 
-        or any other useful functions
-    */
-
-    /*
-    ENTER YOUR CODE HERE
-    */
-
-
-/*
-get_user_command():
-Take input of arbitrary size from the user and return to the user_prompt_loop()
-*/
-
-/*get_user_command()*/
-
-    /*
-    Functions you may need: 
-        malloc(), realloc(), getline(), fgetc(), or any other similar functions
-    */
-
-    /*
-    ENTER YOUR CODE HERE
-    */
-
-
-/*
-parse_command():
-Take command grabbed from the user and parse appropriately.
-Example: 
-    user input: "ls -la"
-    parsed output: ["ls", "-la", NULL]
-Example: 
-    user input: "echo     hello                     world  "
-    parsed output: ["echo", "hello", "world", NULL]
-*/
-
-/*parse_command()*/
-
-    /*
-    Functions you may need: 
-        malloc(), realloc(), free(), strlen(), first_unquoted_space(), unescape()
-    */
-
-    /*
-    ENTER YOUR CODE HERE
-    */
-
-
-/*
-execute_command():
-Execute the parsed command if the commands are neither /proc nor exit;
-fork a process and execute the parsed command inside the child process
-*/
-
-/*execute_command()*/
-
-    /*
-    Functions you may need: 
-        fork(), execvp(), waitpid(), and any other useful function
-    */
-
-    /*
-    ENTER YOUR CODE HERE
-    */
-
